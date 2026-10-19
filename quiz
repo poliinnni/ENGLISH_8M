@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Quiz</title>
+<style>
+/* ===== Design system ===== */
+:root {
+  --cream:#FAF7F2; --ink:#2B2B2B; --muted:#77736F; --white:#fff;
+  --mint:#B8E0C8; --lavender:#CFC4EE; --peach:#F5C7A9;
+  --sky:#B8D8F0; --lemon:#F2DE8E; --green:#317D55;
+  --shadow:0 12px 32px rgba(65,52,37,.08),0 2px 7px rgba(65,52,37,.04);
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
+body{background:var(--cream);overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(3px);opacity:.42}
+body:before{width:420px;height:420px;background:radial-gradient(circle,#d7eddf 0%,rgba(215,237,223,0) 70%);top:-180px;left:-130px}
+body:after{width:480px;height:480px;background:radial-gradient(circle,#e5dcf6 0%,rgba(229,220,246,0) 70%);bottom:-230px;right:-180px}
+button,input{font:inherit}
+button{border:0;cursor:pointer;transition:transform .18s ease,box-shadow .2s ease,background .2s ease,opacity .2s ease}
+button:focus-visible,input:focus-visible{outline:3px solid #8a77c5;outline-offset:3px}
+button:active{transform:scale(.97)}
+button:disabled{cursor:not-allowed;opacity:.4;transform:none}
+.screen{display:none;min-height:100vh;padding:28px clamp(18px,4vw,64px);animation:screenIn .36s ease-out}
+.screen.active{display:flex;flex-direction:column}
+@keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(42px,6vw,76px);letter-spacing:-.055em;line-height:1.02;margin-bottom:14px}
+h2{font-size:clamp(30px,4vw,46px);letter-spacing:-.04em;margin-bottom:8px}
+.subtitle{color:var(--muted);font-size:clamp(16px,2vw,20px);line-height:1.5}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:750;color:var(--muted)}
+.primary{background:var(--ink);color:white;padding:16px 28px;border-radius:15px;font-weight:700;box-shadow:0 7px 0 rgba(43,43,43,.08),0 12px 24px rgba(43,43,43,.12)}
+.primary:hover{box-shadow:0 10px 26px rgba(43,43,43,.18);transform:translateY(-2px)}
+.secondary{background:#fff;color:var(--ink);border:1px solid #e9e3dc;padding:13px 19px;border-radius:14px;font-weight:650}
+.secondary:hover{background:#f6f0e8}
+.danger{background:#f8e2d6;color:#8a4528;padding:12px 16px;border-radius:13px;font-weight:700}
+.card{background:rgba(255,255,255,.94);border:1px solid rgba(78,66,52,.07);border-radius:var(--radius);box-shadow:var(--shadow)}
+/* ===== Landing ===== */
+#home{align-items:center;justify-content:center;text-align:center;position:relative}
+.brand-mark{width:76px;height:76px;border-radius:25px;background:linear-gradient(135deg,var(--mint),var(--lavender));display:grid;place-items:center;margin:0 auto 28px;box-shadow:0 12px 28px #b8e0c84f;transform:rotate(-5deg)}
+.brand-mark span{font-size:35px;font-weight:800;transform:rotate(5deg)}
+#home .subtitle{margin-bottom:34px}
+#home .primary{display:block;min-width:170px;font-size:19px;margin:0 auto;}
+#home .dedication{display:flex;width:fit-content;max-width:100%;margin:0 auto 22px;}
+.home-dots{display:flex;gap:9px;justify-content:center;margin-top:38px}
+.dedication{display:inline-flex;flex-direction:column;align-items:center;gap:5px;margin:0 auto 26px;padding:15px 25px;border-radius:18px;background:linear-gradient(120deg,#e3f3e8,#eee8fb);border:1px solid rgba(100,86,125,.10);box-shadow:0 8px 22px rgba(80,65,100,.08)}
+.dedication strong{font-size:clamp(21px,3vw,29px);letter-spacing:-.035em;line-height:1.1}
+.dedication span{font-size:14px;color:var(--muted);font-weight:600}
+.home-dots span{width:10px;height:10px;border-radius:50%}
+/* ===== Team setup ===== */
+.narrow{width:min(850px,100%);margin:auto}
+.setup-head{text-align:center;margin-bottom:30px}
+.team-setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.setup-team{padding:26px}
+.setup-team label{display:block;font-size:13px;font-weight:750;color:var(--muted);margin-bottom:10px}
+.setup-team input,.penalty-input{width:100%;border:1px solid #e7e0d8;border-radius:13px;background:#fffdfb;padding:14px 15px;color:var(--ink);font-size:18px}
+.setup-team .team-color{width:42px;height:7px;border-radius:99px;margin-bottom:22px}
+.setup-bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:22px;flex-wrap:wrap}
+.rules{font-size:13px;color:var(--muted);margin:0}
+.score-preview{font-size:38px;font-weight:750;letter-spacing:-.04em;margin-top:15px}
+/* ===== Board ===== */
+#game{padding:20px clamp(14px,3vw,44px) 26px;gap:16px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.game-brand{font-size:22px;font-weight:800;letter-spacing:-.04em;white-space:nowrap}
+.top-actions{display:flex;gap:8px;align-items:center}
+.team-scores{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.score-card{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border:2px solid transparent;min-width:0;transition:border-color .3s,background .3s,transform .3s}
+.score-card.active-team{border-color:#5d9b74;background:#f7fff9;box-shadow:0 8px 26px #8fc8a32b}
+.score-card .team-name{font-size:clamp(15px,1.8vw,20px);font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-card .turn-label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.score-number{font-size:clamp(29px,4vw,42px);font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums;transition:color .2s}
+.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;flex:1}
+.category{display:flex;flex-direction:column;gap:10px;min-width:0}
+.category-head{background:var(--cat);border-radius:17px;padding:14px 12px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.category-letter{font-size:25px;font-weight:850;line-height:1}
+.category-name{font-size:clamp(12px,1.25vw,15px);font-weight:750;line-height:1.15}
+.question-cell{position:relative;flex:1;min-height:70px;background:white;border:1px solid #eee7df;border-radius:16px;box-shadow:0 3px 8px #463a2b08;display:grid;place-items:center;font-size:clamp(22px,2.5vw,31px);font-weight:800;color:#34312e;transition:transform .2s,box-shadow .2s,background .2s,opacity .3s}
+.question-cell:not(:disabled):hover{background:var(--cat);transform:translateY(-3px);box-shadow:0 12px 20px #463a2b12}
+.question-cell.played{background:#f0ede8;color:#b8b2aa;box-shadow:none;border-color:transparent}
+.question-cell .check{position:absolute;font-size:20px;opacity:0;transform:scale(.5);transition:.25s}
+.question-cell.played .points{opacity:0}
+.question-cell.played .check{opacity:1;transform:scale(1)}
+.board-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:13px}
+/* ===== Modal and question ===== */
+.overlay{position:fixed;inset:0;background:rgba(37,34,31,.48);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+.overlay.open{display:flex}
+.modal{width:min(760px,100%);max-height:min(90vh,900px);overflow:auto;background:#fffdfb;border-radius:26px;padding:clamp(22px,4vw,42px);box-shadow:0 28px 90px #1c19152e;animation:modalIn .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.question-meta{font-size:13px;color:var(--muted);font-weight:650;line-height:1.5}
+.question-meta .dot{display:inline-block;width:8px;height:8px;background:var(--cat);border-radius:50%;margin-right:7px}
+.timer-button{flex-shrink:0;min-width:142px;min-height:94px;border-radius:19px;background:#f8f1e7;border:1px solid #eee3d6;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:clamp(28px,4vw,38px);font-weight:850;font-variant-numeric:tabular-nums}
+.timer-button small{font-size:12px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.timer-button.running{background:#eaf4ed}
+.timer-button.expired{background:#f9e4d7;color:#a84d2d;animation:timerPulse 1.3s ease-in-out infinite alternate}
+@keyframes timerPulse{to{box-shadow:0 0 0 6px #f9e4d755}}
+.question-title{font-size:clamp(28px,4vw,43px);line-height:1.2;letter-spacing:-.035em;text-align:center;margin:36px auto 28px;max-width:620px}
+.answer{color:var(--green);font-size:clamp(21px,3vw,28px);font-weight:750;text-align:center;margin:0 auto 24px;animation:answerIn .32s ease-out}
+@keyframes answerIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.modal-actions button{min-height:50px}
+.correct{background:#d9f0df;color:#205c39;padding:14px 18px;border-radius:14px;font-weight:750}
+.wrong{background:#f8e2d6;color:#8a4528;padding:14px 18px;border-radius:14px;font-weight:750}
+.steal-panel{display:none;margin-top:18px;padding:18px;background:#f8f3ec;border-radius:16px;text-align:center}
+.steal-panel.show{display:block;animation:answerIn .25s ease-out}
+.steal-panel p{color:var(--muted);margin-bottom:12px}
+.close-row{display:flex;justify-content:center;margin-top:20px}
+.describe-note{color:var(--muted);text-align:center;font-size:15px;margin:-12px auto 30px;line-height:1.5}
+.close-x{background:#f2eee8;border-radius:50%;width:38px;height:38px;font-size:21px;line-height:1}
+/* ===== Category letter reveal ===== */
+.letter-modal{text-align:center;width:min(500px,100%)}
+.big-letter{font-size:clamp(130px,24vw,190px);line-height:1;font-weight:900;letter-spacing:-.08em;color:var(--cat);text-shadow:0 12px 30px color-mix(in srgb,var(--cat),transparent 40%);animation:letterPop .7s cubic-bezier(.18,.9,.3,1.3) both}
+@keyframes letterPop{0%{transform:scale(.5);opacity:0}65%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+.remember{color:var(--muted);font-size:14px;margin:16px 0 28px}
+/* ===== Penalties ===== */
+.penalty-list{display:grid;gap:12px;margin:26px 0}
+.penalty-row{display:grid;grid-template-columns:minmax(120px,1.3fr) minmax(70px,.6fr) minmax(100px,1fr) auto;align-items:center;gap:12px;padding:17px 20px}
+.penalty-name{font-weight:750;overflow-wrap:anywhere}
+.penalty-score{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.penalty-input{min-width:0;font-size:17px}
+.apply-btn{background:#e9e2f8;color:#51417b;border-radius:12px;padding:13px 17px;font-weight:750}
+.penalty-help{font-size:14px;color:var(--muted);line-height:1.5}
+.penalty-footer{display:flex;justify-content:flex-end}
+/* ===== Password ===== */
+#password{align-items:center;justify-content:center;text-align:center}
+.password-card{width:min(700px,100%);padding:clamp(26px,5vw,48px)}
+.slots{display:flex;gap:clamp(7px,2vw,15px);justify-content:center;margin:34px auto 25px}
+.slot{width:clamp(48px,10vw,84px);height:clamp(62px,12vw,96px);border:2px solid #e8e0d7;background:#fff;border-radius:17px;display:grid;place-items:center;font-size:clamp(29px,5vw,45px);font-weight:850;transition:background .2s,border-color .2s,transform .2s;color:var(--ink)}
+.slot.filled{animation:slotPop .24s ease-out}
+@keyframes slotPop{0%{transform:scale(.88)}65%{transform:scale(1.07)}100%{transform:scale(1)}}
+.slot.shake{animation:shake .38s ease-in-out}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hidden-entry{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.try-again{min-height:24px;color:var(--muted);font-size:15px;margin-bottom:20px}
+.password-hint{color:var(--muted);font-size:13px;margin:0 0 24px}
+/* ===== Final ===== */
+#final{align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.final-content{position:relative;z-index:2;width:min(760px,100%)}
+.final-title{font-size:clamp(43px,7vw,78px);letter-spacing:-.06em;margin-bottom:12px}
+.final-scores{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:32px 0 26px}
+.final-score{padding:23px}
+.final-score.winner{outline:3px solid #86bd98;background:#f5fff7}
+.final-score .final-name{font-weight:750;color:var(--muted);overflow-wrap:anywhere}
+.final-score .final-number{font-size:clamp(35px,5vw,52px);font-weight:850;letter-spacing:-.05em;margin-top:8px}
+.winner-label{color:var(--green);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-top:5px;min-height:15px}
+@media(max-width:850px){
+  #game{padding:14px;gap:12px}
+  .board{gap:7px}
+  .category-head{padding:10px 8px;min-height:92px}
+  .question-cell{min-height:58px;border-radius:12px}
+  .score-card{padding:12px}
+  .board-footer{font-size:12px}
+}
+@media(max-width:620px){
+  .screen{padding:18px 14px}
+  .team-setup-grid{grid-template-columns:1fr}
+  .setup-team{padding:20px}
+  .team-scores{gap:8px}
+  .score-card{padding:10px;gap:8px}
+  .score-card .turn-label{font-size:9px}
+  .topbar{align-items:flex-start;flex-wrap:wrap}
+  .game-brand{font-size:19px}
+  .top-actions{margin-left:auto}
+  .board{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .category-head{min-height:82px;padding:9px 5px;border-radius:11px}
+  .category-letter{font-size:21px}
+  .category-name{font-size:10px;overflow-wrap:anywhere}
+  .question-cell{min-height:52px;font-size:19px;border-radius:10px}
+  .question-cell .check{font-size:16px}
+  .board-footer{align-items:flex-start;flex-wrap:wrap}
+  .modal-top{align-items:center}
+  .timer-button{min-width:98px;min-height:78px;border-radius:15px}
+  .question-title{margin:28px auto 24px}
+  .penalty-row{grid-template-columns:1fr auto;gap:9px;padding:14px}
+  .penalty-name{grid-column:1}
+  .penalty-score{grid-column:2;grid-row:1}
+  .penalty-input{grid-column:1}
+  .apply-btn{grid-column:2}
+  .final-scores{gap:8px}
+  .final-score{padding:17px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<!-- ===== Screen 1: Landing ===== -->
+<section id="home" class="screen active">
+  <div>
+    <div class="brand-mark"><span>E</span></div>
+    <div class="eyebrow" style="margin-bottom:16px">A classroom challenge</div>
+    <h1>English Quiz</h1>
+    <p class="subtitle">Collect 5 letters. Guess the password.</p>
+    <div class="dedication"><strong>Especially for 8M</strong><span>Made by Polina and Arkhip</span></div>
+    <button class="primary" id="startBtn">Start</button>
+    <div class="home-dots" aria-hidden="true"><span style="background:var(--mint)"></span><span style="background:var(--lavender)"></span><span style="background:var(--peach)"></span><span style="background:var(--sky)"></span><span style="background:var(--lemon)"></span></div>
+  </div>
+</section>
+
+<!-- ===== Screen 2: Team setup ===== -->
+<section id="setup" class="screen">
+  <div class="narrow">
+    <header class="setup-head">
+      <div class="eyebrow" style="margin-bottom:12px">Before we begin</div>
+      <h2>Meet the teams</h2>
+      <p class="subtitle">Choose your team names and get ready.</p>
+    </header>
+    <div class="team-setup-grid">
+      <div class="card setup-team">
+        <div class="team-color" style="background:var(--mint)"></div>
+        <label for="teamAInput">Team 1 name</label>
+        <input id="teamAInput" maxlength="32" value="Team A" autocomplete="off">
+        <div class="score-preview">0</div>
+      </div>
+      <div class="card setup-team">
+        <div class="team-color" style="background:var(--lavender)"></div>
+        <label for="teamBInput">Team 2 name</label>
+        <input id="teamBInput" maxlength="32" value="Team B" autocomplete="off">
+        <div class="score-preview">0</div>
+      </div>
+    </div>
+    <div class="setup-bottom">
+      <p class="rules">English only. No hints. Judges are final.</p>
+      <button class="primary" id="beginBtn">Begin <span aria-hidden="true">↗</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Screen 3: Game board ===== -->
+<section id="game" class="screen">
+  <div class="topbar">
+    <div class="game-brand">English Quiz <span style="color:var(--muted);font-weight:500">/ Game</span></div>
+    <div class="top-actions">
+      <button class="secondary" id="resetBtn">Reset</button>
+      <button class="danger" id="earlyBtn">End game early</button>
+    </div>
+  </div>
+  <div class="team-scores" id="teamScores"></div>
+  <div class="board" id="board"></div>
+  <div class="board-footer"><span id="progressText">0 of 15 questions played</span><span>Choose a value to play</span></div>
+</section>
+
+<!-- ===== Question modal ===== -->
+<div class="overlay" id="questionOverlay" role="dialog" aria-modal="true" aria-labelledby="questionTitle">
+  <div class="modal" id="questionModal">
+    <div class="modal-top">
+      <div>
+        <div class="eyebrow" style="margin-bottom:9px">Your question</div>
+        <div class="question-meta" id="questionMeta"></div>
+      </div>
+      <button class="timer-button" id="timerButton" aria-label="Start 30 second timer"><span id="timerDisplay">⏱ 30s</span><small id="timerCaption">Start timer</small></button>
+    </div>
+    <h2 class="question-title" id="questionTitle"></h2>
+    <p class="answer" id="answerText" hidden></p>
+    <div class="modal-actions" id="questionActions">
+      <button class="primary" id="showAnswerBtn">Show answer</button>
+      <button class="correct" id="correctBtn">✔ Correct</button>
+      <button class="wrong" id="wrongBtn">✘ Wrong</button>
+    </div>
+    <div class="steal-panel" id="stealPanel">
+      <p id="stealPrompt">The other team can steal half the points.</p>
+      <div class="modal-actions">
+        <button class="correct" id="stealBtn">Steal (½ points)</button>
+        <button class="secondary" id="noOneBtn">No one</button>
+      </div>
+    </div>
+    <div class="close-row"><button class="secondary" id="closeQuestionBtn">Close</button></div>
+  </div>
+</div>
+
+<!-- ===== Category letter modal: letter is never stored in game state ===== -->
+<div class="overlay" id="letterOverlay" role="dialog" aria-modal="true" aria-label="Category letter">
+  <div class="modal letter-modal" id="letterModal">
+    <div class="eyebrow" style="margin-bottom:20px">Category complete</div>
+    <div class="big-letter" id="bigLetter"></div>
+    <p class="remember">Remember this letter.</p>
+    <button class="primary" id="closeLetterBtn">Close</button>
+  </div>
+</div>
+
+<!-- ===== Screen 6: Penalties ===== -->
+<section id="penalties" class="screen">
+  <div class="narrow">
+    <div class="eyebrow" style="margin-bottom:12px">Final adjustments</div>
+    <h2>Penalties <span style="color:var(--muted);font-weight:450">(if needed)</span></h2>
+    <p class="subtitle">Enter the number of penalty points to subtract from either team.</p>
+    <div class="penalty-list" id="penaltyList"></div>
+    <p class="penalty-help">Scores can become negative. You can apply multiple adjustments to each team.</p>
+    <div class="penalty-footer"><button class="primary" id="continuePasswordBtn">Continue to password <span aria-hidden="true">↗</span></button></div>
+  </div>
+</section>
+
+<!-- ===== Screen 7: Password entry ===== -->
+<section id="password" class="screen">
+  <div class="card password-card">
+    <div class="eyebrow" style="margin-bottom:13px">Final challenge</div>
+    <h2>Enter the password:</h2>
+    <p class="subtitle">Enter five letters to unlock the final screen.</p>
+    <div class="slots" id="slots" aria-label="Five password letter slots"></div>
+    <input class="hidden-entry" id="passwordInput" aria-label="Type password letters" autocomplete="off" autocapitalize="characters" maxlength="5">
+    <p class="try-again" id="tryAgain" aria-live="polite"></p>
+    <p class="password-hint">Type letters on your keyboard. Backspace removes the last letter.</p>
+    <button class="primary" id="unlockBtn" disabled>Unlock</button>
+  </div>
+</section>
+
+<!-- ===== Screen 8: Final ===== -->
+<section id="final" class="screen">
+  <canvas id="confetti"></canvas>
+  <div class="final-content">
+    <div class="eyebrow" style="margin-bottom:14px">Quiz complete</div>
+    <h1 class="final-title">🎉 Well done! 🎉</h1>
+    <p class="subtitle" id="winnerText"></p>
+    <div class="final-scores" id="finalScores"></div>
+    <button class="primary" id="playAgainBtn">Play again ↻</button>
+  </div>
+</section>
+
+<script>
+/* ===== All quiz content lives in this one object ===== */
+const QUIZ_DATA = {
+  categories: [
+    {id:"C", name:"Culture & Art", color:"#B8E0C8", questions:[
+      {points:100, question:'Complete the meme: "Six ___"', answer:"seven"},
+      {points:200, question:"Who painted the Mona Lisa?", answer:"Leonardo da Vinci"},
+      {points:300, question:"Which film is about a ship that hits an iceberg?", answer:"Titanic"}
+    ]},
+    {id:"A", name:"Grammar", color:"#CFC4EE", questions:[
+      {points:100, question:"If I ___ you, I would apologize.", answer:"were"},
+      {points:200, question:'Rewrite in the passive: "Someone stole my bike yesterday."', answer:"My bike was stolen yesterday."},
+      {points:300, question:"By the time we arrived, the film ___ (already / start).", answer:"had already started"}
+    ]},
+    {id:"N", name:"Numbers & Logic", color:"#F5C7A9", questions:[
+      {points:100, question:"What is 15% of 200?", answer:"30"},
+      {points:200, question:"A train travels 60 km in 30 minutes. What is its speed in km/h?", answer:"120 km/h"},
+      {points:300, question:"Today is Wednesday. What day will it be in 100 days?", answer:"Friday"}
+    ]},
+    {id:"D", name:"Describe It!", color:"#B8D8F0", questions:[
+      {points:100, question:"Describe It!", word:"chocolate"},
+      {points:200, question:"Describe It!", word:"umbrella"},
+      {points:300, question:"Describe It!", word:"homework"}
+    ]},
+    {id:"Y", name:"Yummy Language", color:"#F2DE8E", questions:[
+      {points:100, question:'What is the main ingredient of guacamole?', answer:"avocado"},
+      {points:200, question:"What does \"It's not my cup of tea\" mean?", answer:"I don't like it / it's not my thing"},
+      {points:300, question:'What is the opposite of "sour"?', answer:"sweet"}
+    ]}
+  ],
+  passwordLength:5
+};
+
+/* ===== Runtime state: deliberately no collected-letter state ===== */
+const state = {
+  teams:[{name:"Team A",score:0,penalties:0},{name:"Team B",score:0,penalties:0}],
+  activeTeam:0, played:new Set(), current:null, awaitingSteal:false,
+  timerInterval:null, secondsLeft:30, timerStarted:false, questionResolved:false
+};
+const $ = id => document.getElementById(id);
+const screens = ["home","setup","game","penalties","password","final"];
+let pendingScreenAfterLetter = "game";
+let confettiFrame = null;
+let confettiPieces = [];
+
+function showScreen(id){
+  screens.forEach(s => $(s).classList.toggle("active",s===id));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+function formatScore(n){return Math.round(n).toLocaleString("en-US");}
+function renderScores(){
+  $("teamScores").innerHTML = state.teams.map((team,i)=>`
+    <div class="card score-card ${state.activeTeam===i?"active-team":""}" style="--team-color:${i===0?"var(--mint)":"var(--lavender)"}">
+      <div style="min-width:0"><div class="team-name">${escapeHtml(team.name)}</div><div class="turn-label">${state.activeTeam===i?"Active team":"Waiting"}</div></div>
+      <div class="score-number" data-score="${i}">${formatScore(team.score)}</div>
+    </div>`).join("");
+}
+function renderBoard(){
+  $("board").innerHTML = QUIZ_DATA.categories.map((cat,ci)=>`
+    <div class="category" style="--cat:${cat.color}">
+      <div class="category-head"><div class="category-letter">${cat.id}</div><div class="category-name">${cat.name}</div></div>
+      ${cat.questions.map((q,qi)=>{
+        const key=`${ci}-${qi}`, played=state.played.has(key);
+        return `<button class="question-cell ${played?"played":""}" data-key="${key}" ${played?"disabled":""} aria-label="${cat.name}, ${q.points} points${played?", already played":""}">
+          <span class="points">${q.points}</span><span class="check" aria-hidden="true">✓</span>
+        </button>`;
+      }).join("")}
+    </div>`).join("");
+  $("progressText").textContent=`${state.played.size} of 15 questions played`;
+}
+function renderAll(){renderScores();renderBoard();}
+function clearTimer(){
+  if(state.timerInterval!==null){clearInterval(state.timerInterval);state.timerInterval=null;}
+}
+function resetTimerUI(){
+  clearTimer(); state.secondsLeft=30;state.timerStarted=false;
+  $("timerButton").className="timer-button";
+  $("timerDisplay").textContent="⏱ 30s";$("timerCaption").textContent="Start timer";
+  $("timerButton").setAttribute("aria-label","Start 30 second timer");
+}
+function startTimer(){
+  if(state.timerStarted){resetTimerUI();return;}
+  state.timerStarted=true;state.secondsLeft=30;
+  $("timerButton").className="timer-button running";
+  $("timerCaption").textContent="Click to restart";
+  $("timerButton").setAttribute("aria-label","Restart 30 second timer");
+  $("timerDisplay").textContent="30";
+  state.timerInterval=setInterval(()=>{
+    state.secondsLeft--;
+    $("timerDisplay").textContent=String(state.secondsLeft);
+    if(state.secondsLeft<=0){
+      clearTimer();state.timerInterval=null;
+      $("timerButton").className="timer-button expired";
+      $("timerCaption").textContent="Time's up";
+    }
+  },1000);
+}
+function openQuestion(ci,qi){
+  const cat=QUIZ_DATA.categories[ci], q=cat.questions[qi];
+  state.current={ci,qi,key:`${ci}-${qi}`,points:q.points,category:cat};
+  state.awaitingSteal=false;state.questionResolved=false;
+  resetTimerUI();
+  const meta=$("questionMeta");
+  meta.style.setProperty("--cat",cat.color);
+  meta.innerHTML=`<span class="dot" style="background:${cat.color}"></span>${cat.name} · ${q.points} points · ${escapeHtml(state.teams[state.activeTeam].name)} answers`;
+  const isDescribe=cat.id==="D";
+  $("questionTitle").textContent=isDescribe?"Describe It!":q.question;
+  $("questionTitle").style.setProperty("--cat",cat.color);
+  $("answerText").hidden=true;$("answerText").textContent="";
+  $("showAnswerBtn").disabled=false;
+  $("showAnswerBtn").style.display=isDescribe?"none":"inline-block";
+  // Regular questions show Correct/Wrong only after Show answer. Describe It! has no answer reveal.
+  $("correctBtn").style.display=isDescribe?"inline-block":"none";
+  $("wrongBtn").style.display=isDescribe?"inline-block":"none";
+  $("correctBtn").disabled=false;$("wrongBtn").disabled=false;
+  $("correctBtn").textContent=`✔ Correct (+${q.points})`;
+  $("stealPanel").classList.remove("show");
+  $("questionActions").style.display="flex";
+  $("questionOverlay").classList.add("open");
+  $("closeQuestionBtn").focus({preventScroll:true});
+}
+function closeQuestion(){
+  $("questionOverlay").classList.remove("open");
+  clearTimer();state.current=null;state.awaitingSteal=false;
+}
+function advanceTurn(){
+  state.activeTeam=1-state.activeTeam;
+  renderScores();
+}
+function finishQuestion(){
+  const current=state.current;
+  if(!current)return;
+  const {ci,qi,key,category}=current;
+  state.played.add(key);
+  closeQuestion();
+  renderBoard();
+  const allCategoryDone=category.questions.every((q,index)=>state.played.has(`${ci}-${index}`));
+  if(allCategoryDone){
+    pendingScreenAfterLetter=state.played.size===15?"penalties":"game";
+    showLetter(category.id,category.color);
+  }else if(state.played.size===15){
+    showScreen("penalties");
+  }
+}
+function showLetter(letter,color){
+  $("bigLetter").textContent=letter;
+  $("bigLetter").style.setProperty("--cat",color);
+  $("letterModal").style.setProperty("--cat",color);
+  $("letterOverlay").classList.add("open");
+  $("closeLetterBtn").focus({preventScroll:true});
+}
+function closeLetter(){
+  $("letterOverlay").classList.remove("open");
+  $("bigLetter").textContent="";
+  showScreen(pendingScreenAfterLetter);
+}
+function resolveCorrect(){
+  if(!state.current||state.questionResolved)return;
+  state.questionResolved=true;
+  state.teams[state.activeTeam].score+=state.current.points;
+  renderScores();finishQuestion();advanceTurn();
+}
+function resolveWrong(){
+  if(!state.current||state.questionResolved)return;
+  state.awaitingSteal=true;
+  $("questionActions").style.display="none";
+  $("stealPrompt").textContent=`${state.teams[1-state.activeTeam].name} can steal half the points.`;
+  $("stealBtn").textContent=`Steal (+${state.current.points/2})`;
+  $("stealPanel").classList.add("show");
+  $("stealBtn").focus({preventScroll:true});
+}
+function resolveSteal(steal){
+  if(!state.current||state.questionResolved)return;
+  state.questionResolved=true;
+  if(steal)state.teams[1-state.activeTeam].score+=state.current.points/2;
+  renderScores();
+  finishQuestion();
+  advanceTurn();
+}
+function resetGame(){
+  clearTimer();
+  state.teams=[{name:"Team A",score:0,penalties:0},{name:"Team B",score:0,penalties:0}];
+  state.activeTeam=0;state.played=new Set();state.current=null;state.awaitingSteal=false;
+  state.timerStarted=false;state.secondsLeft=30;state.questionResolved=false;
+  $("questionOverlay").classList.remove("open");$("letterOverlay").classList.remove("open");
+  $("teamAInput").value="Team A";$("teamBInput").value="Team B";
+  $("tryAgain").textContent="";$("passwordInput").value="";
+  stopConfetti();renderAll();showScreen("home");
+}
+function openPenalties(){
+  clearTimer();$("questionOverlay").classList.remove("open");$("letterOverlay").classList.remove("open");
+  renderPenalties();showScreen("penalties");
+}
+function renderPenalties(){
+  $("penaltyList").innerHTML=state.teams.map((team,i)=>`
+    <div class="card penalty-row">
+      <div class="penalty-name">${escapeHtml(team.name)}</div>
+      <div class="penalty-score" id="penaltyScore${i}">${formatScore(team.score)}</div>
+      <input class="penalty-input" type="number" step="any" id="penaltyInput${i}" placeholder="e.g. 50" aria-label="Score adjustment for ${escapeHtml(team.name)}">
+      <button class="apply-btn" data-apply="${i}">Apply</button>
+    </div>`).join("");
+}
+function applyPenalty(i){
+  const input=$(`penaltyInput${i}`);
+  if(input.value.trim()==="")return;
+  const amount=Number(input.value);
+  if(!Number.isFinite(amount)){input.value="";return;}
+  const penalty=Math.abs(amount);
+  state.teams[i].penalties+=penalty;
+  state.teams[i].score-=penalty;
+  const target=$(`penaltyScore${i}`);
+  target.textContent=formatScore(state.teams[i].score);
+  target.animate([{transform:"scale(1)"},{transform:"scale(1.12)"},{transform:"scale(1)"}],{duration:400,easing:"ease-out"});
+  input.value="";
+}
+
+/* ===== Password slots: no letters are collected or retained before this screen ===== */
+let enteredPassword="";
+const slotColors=["#B8E0C8","#CFC4EE","#F5C7A9","#B8D8F0","#F2DE8E"];
+function renderSlots(popIndex=-1){
+  $("slots").innerHTML=Array.from({length:5},(_,i)=>{
+    const filled=i<enteredPassword.length;
+    return `<div class="slot ${filled?"filled":""}" style="${filled?`background:${slotColors[i]};border-color:${slotColors[i]}`:""}" ${i===popIndex?'data-pop="true"':""}>${filled?escapeHtml(enteredPassword[i]):""}</div>`;
+  }).join("");
+  $("unlockBtn").disabled=enteredPassword.length!==5;
+}
+function addPasswordChar(char){
+  if(!/^[a-z]$/i.test(char)||enteredPassword.length>=5)return;
+  enteredPassword+=char.toUpperCase();renderSlots(enteredPassword.length-1);
+  $("tryAgain").textContent="";
+}
+function removePasswordChar(){
+  if(!enteredPassword.length)return;
+  enteredPassword=enteredPassword.slice(0,-1);renderSlots();$("tryAgain").textContent="";
+}
+function checkPassword(){
+  if(enteredPassword.length!==5)return;
+  if(enteredPassword.toUpperCase()==="CANDY"){
+    $("tryAgain").textContent="";
+    showFinal();
+  }else{
+    document.querySelectorAll(".slot").forEach(slot=>{slot.classList.remove("shake");void slot.offsetWidth;slot.classList.add("shake");});
+    setTimeout(()=>{enteredPassword="";renderSlots();$("tryAgain").textContent="Try again";},420);
+  }
+}
+
+/* ===== Final score and lightweight offline confetti ===== */
+function showFinal(){
+  const [a,b]=state.teams;
+  const winner=a.score===b.score?null:(a.score>b.score?a:b);
+  $("winnerText").textContent=winner?`${winner.name} wins the quiz.`:"It's a draw. Both teams played well.";
+  $("finalScores").innerHTML=state.teams.map((team,i)=>`
+    <div class="card final-score ${winner===team?"winner":""}">
+      <div class="final-name">${escapeHtml(team.name)}</div>
+      <div class="final-number">${formatScore(team.score)}</div>
+      <div class="winner-label">${winner===team?"Winner":winner===null?"Draw":""}</div>
+    </div>`).join("");
+  showScreen("final");startConfetti();
+}
+function startConfetti(){
+  stopConfetti();
+  const canvas=$("confetti"),ctx=canvas.getContext("2d");
+  const resize=()=>{canvas.width=window.innerWidth*devicePixelRatio;canvas.height=window.innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);};
+  resize();
+  const colors=["#B8E0C8","#CFC4EE","#F5C7A9","#B8D8F0","#F2DE8E"];
+  confettiPieces=Array.from({length:95},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight-innerHeight,w:5+Math.random()*7,h:7+Math.random()*10,rot:Math.random()*Math.PI,spin:(Math.random()-.5)*.09,vy:1.2+Math.random()*2.2,vx:(Math.random()-.5)*.8,color:colors[Math.floor(Math.random()*colors.length)]}));
+  function draw(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    confettiPieces.forEach(p=>{
+      p.y+=p.vy;p.x+=p.vx;p.rot+=p.spin;
+      if(p.y>innerHeight+20){p.y=-20;p.x=Math.random()*innerWidth;}
+      if(p.x<-20)p.x=innerWidth+20;if(p.x>innerWidth+20)p.x=-20;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
+    });
+    confettiFrame=requestAnimationFrame(draw);
+  }
+  window.addEventListener("resize",resize);
+  confettiFrame=requestAnimationFrame(draw);
+}
+function stopConfetti(){
+  if(confettiFrame!==null)cancelAnimationFrame(confettiFrame);
+  confettiFrame=null;
+  const canvas=$("confetti");if(canvas){const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height);}
+}
+
+/* ===== Event wiring ===== */
+$("startBtn").addEventListener("click",()=>showScreen("setup"));
+$("beginBtn").addEventListener("click",()=>{
+  state.teams[0].name=$("teamAInput").value.trim()||"Team A";
+  state.teams[1].name=$("teamBInput").value.trim()||"Team B";
+  renderAll();showScreen("game");
+});
+$("board").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-key]");if(!btn||btn.disabled)return;
+  const [ci,qi]=btn.dataset.key.split("-").map(Number);openQuestion(ci,qi);
+});
+$("timerButton").addEventListener("click",startTimer);
+$("showAnswerBtn").addEventListener("click",()=>{
+  if(!state.current||state.current.category.id==="D")return;
+  const q=state.current.category.questions[state.current.qi];
+  $("answerText").textContent=q.answer;$("answerText").hidden=false;
+  $("showAnswerBtn").style.display="none";
+  $("correctBtn").style.display="inline-block";$("wrongBtn").style.display="inline-block";
+  $("correctBtn").disabled=false;$("wrongBtn").disabled=false;
+});
+$("correctBtn").addEventListener("click",resolveCorrect);
+$("wrongBtn").addEventListener("click",resolveWrong);
+$("stealBtn").addEventListener("click",()=>resolveSteal(true));
+$("noOneBtn").addEventListener("click",()=>resolveSteal(false));
+$("closeQuestionBtn").addEventListener("click",closeQuestion);
+$("closeLetterBtn").addEventListener("click",closeLetter);
+$("earlyBtn").addEventListener("click",()=>{
+  if(window.confirm("End the game now and move to penalties?"))openPenalties();
+});
+$("resetBtn").addEventListener("click",()=>{
+  if(window.confirm("Reset the entire game? All scores and progress will be lost."))resetGame();
+});
+$("penaltyList").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-apply]");if(btn)applyPenalty(Number(btn.dataset.apply));
+});
+$("continuePasswordBtn").addEventListener("click",()=>{
+  enteredPassword="";renderSlots();$("tryAgain").textContent="";showScreen("password");$("passwordInput").focus({preventScroll:true});
+});
+$("passwordInput").addEventListener("input",e=>{
+  const cleaned=e.target.value.replace(/[^a-z]/gi,"").slice(0,5).toUpperCase();
+  if(cleaned.length>enteredPassword.length){for(const ch of cleaned.slice(enteredPassword.length))addPasswordChar(ch);}
+  else if(cleaned.length<enteredPassword.length){enteredPassword=cleaned;renderSlots();}
+  e.target.value="";
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    if($("questionOverlay").classList.contains("open"))closeQuestion();
+    else if($("letterOverlay").classList.contains("open"))closeLetter();
+    return;
+  }
+  if(!$("password").classList.contains("active"))return;
+  if(e.key==="Backspace"){e.preventDefault();removePasswordChar();return;}
+  if(/^[a-z]$/i.test(e.key)){e.preventDefault();addPasswordChar(e.key);}
+  if(e.key==="Enter"&&enteredPassword.length===5)checkPassword();
+});
+$("unlockBtn").addEventListener("click",checkPassword);
+$("playAgainBtn").addEventListener("click",resetGame);
+$("questionOverlay").addEventListener("click",e=>{if(e.target===$("questionOverlay"))closeQuestion();});
+$("letterOverlay").addEventListener("click",e=>{if(e.target===$("letterOverlay"))closeLetter();});
+
+/* Initial rendering */
+renderAll();renderSlots();
+</script>
+</body>
+</html>
