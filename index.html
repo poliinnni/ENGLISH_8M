@@ -74,7 +74,7 @@ h2{font-size:clamp(30px,4vw,46px);letter-spacing:-.04em;margin-bottom:8px}
 .score-number{font-size:clamp(29px,4vw,42px);font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums;transition:color .2s}
 .board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;flex:1}
 .category{display:flex;flex-direction:column;gap:10px;min-width:0}
-.category-head{background:var(--cat);border-radius:17px;padding:14px 12px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.category-head{background:var(--cat);border-radius:17px;padding:14px 12px;min-height:104px;display:flex;align-items:center;justify-content:center;text-align:center}
 .category-letter{font-size:25px;font-weight:850;line-height:1}
 .category-name{font-size:clamp(12px,1.25vw,15px);font-weight:750;line-height:1.15}
 .question-cell{position:relative;flex:1;min-height:70px;background:white;border:1px solid #eee7df;border-radius:16px;box-shadow:0 3px 8px #463a2b08;display:grid;place-items:center;font-size:clamp(22px,2.5vw,31px);font-weight:800;color:#34312e;transition:transform .2s,box-shadow .2s,background .2s,opacity .3s}
@@ -384,7 +384,7 @@ function renderScores(){
 function renderBoard(){
   $("board").innerHTML = QUIZ_DATA.categories.map((cat,ci)=>`
     <div class="category" style="--cat:${cat.color}">
-      <div class="category-head"><div class="category-letter">${cat.id}</div><div class="category-name">${cat.name}</div></div>
+      <div class="category-head"><div class="category-name">${cat.name}</div></div>
       ${cat.questions.map((q,qi)=>{
         const key=`${ci}-${qi}`, played=state.played.has(key);
         return `<button class="question-cell ${played?"played":""}" data-key="${key}" ${played?"disabled":""} aria-label="${cat.name}, ${q.points} points${played?", already played":""}">
